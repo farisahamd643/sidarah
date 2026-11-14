@@ -19,6 +19,7 @@ app.get('/health', async (req, res) => {
 });
 
 app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/akun', require('./routes/akunRoutes'));
 app.use('/api/jadwal', require('./routes/jadwalRoutes'));
 app.use('/api/pendaftaran', require('./routes/pendaftaranRoutes'));
 app.use('/api/profil', require('./routes/profilRoutes'));
@@ -35,5 +36,9 @@ app.use((err, req, res, next) => {
   res.status(500).json({ pesan: 'Terjadi kesalahan server' });
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server jalan di port ${PORT}`));
+if (require.main === module) {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => console.log(`Server jalan di port ${PORT}`));
+}
+
+module.exports = app;
