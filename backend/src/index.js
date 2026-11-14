@@ -19,6 +19,8 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/jadwal', require('./routes/jadwalRoutes'));
 app.use('/api/pendaftaran', require('./routes/pendaftaranRoutes'));
 app.use('/api/profil', require('./routes/profilRoutes'));
+app.use('/api/pendonor', require('./routes/pendonorRoutes'));
+app.use('/api/dashboard', require('./routes/dashboardRoutes'));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server jalan di port ${PORT}`));
