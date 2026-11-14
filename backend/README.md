@@ -50,3 +50,35 @@ Endpoint bertanda login memakai header `Authorization: Bearer <token>`. Token di
 ## Aturan pendaftaran donor
 
 Usia minimal 17 tahun, jadwal belum lewat, tidak boleh daftar ganda, dan jumlah pendaftar tidak boleh melebihi kuota.
+
+## Endpoint tambahan
+
+| Method | Path | Akses | Fungsi |
+|--------|------|-------|--------|
+| GET | /api/akun | Login | Data akun sendiri |
+| PUT | /api/akun | Login | Ubah nama |
+| PUT | /api/akun/password | Login | Ganti password (butuh password_lama dan password_baru) |
+| POST | /api/pendonor | Admin | Tambah data pendonor |
+| PUT | /api/pendonor/:id | Admin | Ubah data pendonor |
+| DELETE | /api/pendonor/:id | Admin | Hapus pendonor beserta akunnya |
+| GET | /api/dashboard/golongan | Admin | Rekap jumlah pendonor per golongan darah |
+
+## Panduan serah terima
+
+### Untuk yang mengurus hosting (DevOps)
+
+- Folder backend: `backend`
+- Build command: `npm install`, start command: `npm start`
+- Tes untuk CI: `npm ci` lalu `npm test` (tidak butuh database)
+- Environment variable (isi di dashboard hosting atau GitHub Secrets, jangan di repo): `DATABASE_URL` (Session pooler Supabase), `JWT_SECRET` (string acak panjang), `CORS_ORIGIN` (alamat frontend, boleh lebih dari satu dipisah koma), `PORT` (biasanya diatur otomatis oleh hosting).
+- Cek hidup: buka `/health`, hasilnya harus `"db":"terhubung"`.
+- Membuat akun admin: set `ADMIN_EMAIL` dan `ADMIN_PASSWORD` (opsional `ADMIN_NAMA`) sementara di environment, jalankan `npm run buat-admin`, lalu hapus variabel itu.
+- Free tier hosting bisa tidur saat idle, jadi buka `/health` beberapa menit sebelum demo.
+
+### Untuk yang mengurus frontend
+
+- Base URL: alamat backend + `/api`
+- Setelah `POST /api/auth/login`, simpan `token`, lalu kirim di setiap permintaan dengan header `Authorization: Bearer <token>`. Token berlaku 1 hari.
+- Semua error berbentuk JSON `{ "pesan": "..." }` dengan status 400, 401, 403, 404, 409, atau 500.
+- Format tanggal `YYYY-MM-DD`, format jam `HH:MM:SS`.
+- Frontend PHP lama memakai sesi PHP dan query langsung ke database. Agar memakai backend ini, halaman harus memanggil endpoint di atas.
