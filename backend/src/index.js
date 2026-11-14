@@ -16,10 +16,6 @@ app.get('/health', async (req, res) => {
   }
 });
 
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/jadwal', require('./routes/jadwalRoutes'));
-app.use('/api/pendaftaran', require('./routes/pendaftaranRoutes'));
-app.use('/api/profil', require('./routes/profilRoutes'));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server jalan di port ${PORT}`));
