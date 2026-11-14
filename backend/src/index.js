@@ -15,7 +15,7 @@ app.get('/health', async (req, res) => {
     res.status(500).json({ status: 'error', pesan: err.message });
   }
 });
-
+app.use('/api/auth', require('./routes/authRoutes'));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server jalan di port ${PORT}`));
