@@ -1,11 +1,17 @@
 name: Backend CI
+
 on:
   push:
-    paths: ["backend/**"]
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-ci.yml"
   pull_request:
-    paths: ["backend/**"]
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-ci.yml"
+
 jobs:
-  check:
+  test:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -18,5 +24,4 @@ jobs:
           cache: npm
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
-      - name: Cek sintaks semua file
-        run: for f in $(find src -name "*.js"); do node --check "$f"; done
+      - run: npm test
