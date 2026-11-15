@@ -26,6 +26,7 @@ app.use('/api/profil', require('./routes/profilRoutes'));
 app.use('/api/pendonor', require('./routes/pendonorRoutes'));
 app.use('/api/dashboard', require('./routes/dashboardRoutes'));
 
+app.use('/demo', express.static(require('path').join(__dirname, '..', 'demo')));
 app.use((req, res) => res.status(404).json({ pesan: 'Endpoint tidak ditemukan' }));
 
 app.use((err, req, res, next) => {
