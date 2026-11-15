@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><title>Demo API SiDarah</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{font-family:system-ui,sans-serif;max-width:760px;margin:20px auto;padding:0 12px;color:#222}
+h1{color:#b71c1c} section{border:1px solid #ddd;border-radius:8px;padding:12px;margin:12px 0}
+input,select,button{padding:6px;margin:3px 0} button{cursor:pointer}
+li{margin:6px 0} #pesan{padding:8px;border-radius:6px;background:#eef;white-space:pre-wrap}
+.hide{display:none}
+</style></head><body>
+<h1>Demo API SiDarah</h1>
+<div id="pesan">Silakan daftar akun atau login.</div>
+<section id="auth">
+<h3>Daftar akun pendonor</h3>
+<input id="rn" placeholder="Nama"> <input id="re" placeholder="Email"> <input id="rp" type="password" placeholder="Password (min 8)"><br>
+<select id="rj"><option value="L">Laki-laki</option><option value="P">Perempuan</option></select>
+<input id="rt" type="date" value="2000-01-01"> <button onclick="daftarAkun()">Daftar</button>
+<h3>Login</h3>
+<input id="le" placeholder="Email"> <input id="lp" type="password" placeholder="Password"> <button onclick="masuk()">Login</button>
+</section>
+<section id="app" class="hide">
+<p>Login sebagai <b id="nama"></b> (<span id="role"></span>) <button onclick="keluar()">Keluar</button></p>
+<h3>Jadwal donor</h3><ul id="jadwal"></ul>
+<h3>Riwayat pendaftaran saya</h3><ul id="riwayat"></ul>
+</section>
+<script>
+var token = null;
+var $ = function(id){ return document.getElementById(id); };
+function info(t){ $('pesan').textContent = t; }
+async function api(method, path, body){
+  var opt = { method: method, headers: {} };
+  if (token) opt.headers.Authorization = 'Bearer ' + token;
+  if (body) { opt.headers['Content-Type'] = 'application/json'; opt.body = JSON.stringify(body); }
+  var res = await fetch('/api' + path, opt);
+  var data = await res.json();
+  if (!res.ok) throw new Error(data.pesan || 'Gagal');
+  return data;
+}
+async function daftarAkun(){
+  try {
+    var d = await api('POST','/auth/register',{nama:$('rn').value,email:$('re').value,password:$('rp').value,jenis_kelamin:$('rj').value,tanggal_lahir:$('rt').value});
+    info(d.pesan + '. Sekarang silakan login.');
+  } catch(e){ info('Gagal: ' + e.message); }
+}
+async function masuk(){
+  try {
+    var d = await api('POST','/auth/login',{email:$('le').value,password:$('lp').value});
+    token = d.token;
+    $('nama').textContent = d.user.nama; $('role').textContent = d.user.role;
+    $('auth').classList.add('hide'); $('app').classList.remove('hide');
+    info('Login berhasil.');
+    muat();
+  } catch(e){ info('Gagal: ' + e.message); }
+}
+function keluar(){ token = null; $('app').classList.add('hide'); $('auth').classList.remove('hide'); info('Sudah keluar.'); }
+function item(teks, tombol, aksi){
+  var li = document.createElement('li');
+  li.appendChild(document.createTextNode(teks + ' '));
+  if (tombol) { var b = document.createElement('button'); b.textContent = tombol; b.onclick = aksi; li.appendChild(b); }
+  return li;
+}
+async function muat(){
+  try {
+    var j = await api('GET','/jadwal');
+    var ul = $('jadwal'); ul.textContent = '';
+    j.forEach(function(x){
+      ul.appendChild(item(x.judul + ' | ' + x.tanggal + ' | ' + x.jam_mulai.slice(0,5) + '-' + x.jam_selesai.slice(0,5) + ' | ' + x.lokasi + ' | terdaftar ' + x.terdaftar + '/' + x.kuota, 'Daftar', function(){ ikut(x.id_jadwal); }));
+    });
+    if (!j.length) ul.appendChild(item('Belum ada jadwal.'));
+    var r = await api('GET','/pendaftaran/saya');
+    var ur = $('riwayat'); ur.textContent = '';
+    r.forEach(function(x){
+      var batal = (x.status === 'menunggu' || x.status === 'diterima') ? 'Batalkan' : null;
+      ur.appendChild(item(x.judul + ' | ' + x.tanggal + ' | status: ' + x.status, batal, function(){ batalkan(x.id_pendaftaran); }));
+    });
+    if (!r.length) ur.appendChild(item('Belum ada pendaftaran.'));
+  } catch(e){ info('Gagal memuat: ' + e.message); }
+}
+async function ikut(id){
+  try { var d = await api('POST','/pendaftaran',{id_jadwal:id}); info(d.pesan); muat(); }
+  catch(e){ info('Gagal: ' + e.message); }
+}
+async function batalkan(id){
+  try { var d = await api('PATCH','/pendaftaran/' + id + '/batal'); info(d.pesan); muat(); }
+  catch(e){ info('Gagal: ' + e.message); }
+}
+</script></body></html>
